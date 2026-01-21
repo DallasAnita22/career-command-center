@@ -31,7 +31,7 @@ class AIService:
         try:
             # New 2026 Generation Call
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash-lite-preview-02-05', 
+                model='gemini-2.0-flash-exp', 
                 contents=prompt
             )
             return response.text.strip()
@@ -58,7 +58,7 @@ class AIService:
         """
         try:
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash-lite-preview-02-05',
+                model='gemini-2.0-flash-exp',
                 contents=prompt
             )
             return response.text.strip()
@@ -80,7 +80,7 @@ class AIService:
         """
         try:
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash-lite-preview-02-05',
+                model='gemini-2.0-flash-exp',
                 contents=prompt
             )
             text = response.text.replace("[", "").replace("]", "").replace('"', "")
@@ -103,7 +103,7 @@ class AIService:
         """
         try:
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash-lite-preview-02-05',
+                model='gemini-2.0-flash-exp',
                 contents=prompt
             )
             return response.text.strip()
