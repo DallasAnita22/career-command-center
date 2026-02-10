@@ -27,7 +27,7 @@ st.markdown("""
 <style>
     /* 1. Main Background - LinkedIn Light Gray */
     .stApp {
-        background-color: #f3f2ef;
+        background-color: #ffffff;
     }
     
     /* 2. Card Styling - The "White Box" look */
