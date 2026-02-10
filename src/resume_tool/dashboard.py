@@ -78,11 +78,7 @@ def load_nlp():
     except: nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')
     if spacy:
         try: return spacy.load("en_core_web_sm")
-        except: 
-            try:
-                from spacy.cli import download; download("en_core_web_sm"); return spacy.load("en_core_web_sm")
-            except:
-                return None
+        except: return None
     return None
 
 nlp = load_nlp()
