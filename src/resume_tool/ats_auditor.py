@@ -1,14 +1,23 @@
-import spacy
+import re
+try:
+    import spacy
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        import spacy.cli
+        spacy.cli.download("en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
+except (ImportError, OSError, Exception):
+    nlp = None
+    import nltk
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+        nltk.download('stopwords')
+
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import re
-
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    import spacy.cli
-    spacy.cli.download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
 
 RESUME_NOISE = {"experience", "skills", "education", "summary", "responsible", "duties", "include", "worked", "helped", "team", "role", "company", "work", "job", "candidate", "requirements", "year", "excellent", "strong", "proficient", "various", "ability", "remote", "hybrid"}
 
@@ -18,13 +27,19 @@ def clean_text(text):
     return re.sub(r'\s+', ' ', text).strip()
 
 def get_tokens(text):
-    doc = nlp(text)
-    tokens = []
-    for token in doc:
-        if token.pos_ not in ["NOUN", "PROPN"]: continue
-        if len(token.text) < 3 or token.is_stop or token.text in RESUME_NOISE: continue
-        tokens.append(token.text)
-    return set(tokens)
+    if nlp:
+        doc = nlp(text)
+        tokens = []
+        for token in doc:
+            if token.pos_ not in ["NOUN", "PROPN"]: continue
+            if len(token.text) < 3 or token.is_stop or token.text in RESUME_NOISE: continue
+            tokens.append(token.text)
+        return set(tokens)
+    else:
+        # Fallback to NLTK
+        tokens = nltk.word_tokenize(text)
+        stopwords = set(nltk.corpus.stopwords.words('english'))
+        return {t for t in tokens if t.isalpha() and t not in stopwords and t not in RESUME_NOISE and len(t) > 2}
 
 # --- EXISTING JD MATCH AUDIT ---
 def get_analysis_data(resume_text, jd_text):

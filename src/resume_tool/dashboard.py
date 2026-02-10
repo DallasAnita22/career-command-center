@@ -9,7 +9,10 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from fpdf import FPDF 
 import nltk
-import spacy
+try:
+    import spacy
+except (ImportError, OSError, Exception):
+    spacy = None
 
 # --- 1. CONFIG & STYLE ENGINE ---
 st.set_page_config(
@@ -73,8 +76,14 @@ sys.path.append(current_dir)
 def load_nlp():
     try: nltk.data.find('tokenizers/punkt')
     except: nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')
-    try: return spacy.load("en_core_web_sm")
-    except: from spacy.cli import download; download("en_core_web_sm"); return spacy.load("en_core_web_sm")
+    if spacy:
+        try: return spacy.load("en_core_web_sm")
+        except: 
+            try:
+                from spacy.cli import download; download("en_core_web_sm"); return spacy.load("en_core_web_sm")
+            except:
+                return None
+    return None
 
 nlp = load_nlp()
 
