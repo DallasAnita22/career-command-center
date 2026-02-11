@@ -11,12 +11,19 @@ console = Console()
 DATA_FILE = "master_profile.json"
 
 def load_data():
+    """Loads existing data or creates a new structure."""
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
+        try:
+            with open(DATA_FILE, "r") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            pass # File exists but is corrupt/empty
+    
+    # Default Structure
     return {"summary": {}, "experience": [], "skills": {}}
 
 def save_data(data):
+    """Saves the data back to the JSON file."""
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=2)
     console.print(f"\n[bold green]✅ Profile saved to {DATA_FILE}![/bold green]")
@@ -25,6 +32,7 @@ def add_experience(data):
     console.clear()
     console.print(Panel("[bold blue]Add Work Experience[/bold blue]", style="blue"))
     
+    # 1. Get Job Details
     role = Prompt.ask("Job Title (e.g. QA Analyst)")
     company = Prompt.ask("Company Name")
     dates = Prompt.ask("Dates (e.g. 2021-Present)")
@@ -32,17 +40,18 @@ def add_experience(data):
     console.print("\n[yellow]Now, let's add bullet points. Type 'DONE' when finished.[/yellow]")
     
     while True:
+        # 2. Get Bullet Point
         bullet = Prompt.ask("\n[bold]Enter a Bullet Point[/bold]")
         if bullet.strip().upper() == "DONE":
             break
             
-        # The Magic: Auto-Tagging
-        console.print("[dim]Select domains for this bullet (separate by comma):[/dim]")
+        # 3. Tag It
+        console.print("[dim]Select domains for this bullet (separate by comma).[/dim]")
         console.print("[dim]Options: QA, PRODUCT, DELIVERY, TECH[/dim]")
         tags_input = Prompt.ask("Tags", default="QA")
         tags = [t.strip().upper() for t in tags_input.split(",")]
         
-        # Add to data
+        # 4. Save It
         new_entry = {
             "text": bullet,
             "domains": tags,
@@ -56,20 +65,22 @@ def add_skills(data):
     console.print(Panel("[bold blue]Add Skills[/bold blue]", style="blue"))
     
     category = Prompt.ask("Skill Category (e.g. QA, PRODUCT, TECH)").upper()
-    current_skills = data["skills"].get(category, [])
     
-    console.print(f"Current {category} Skills: {', '.join(current_skills)}")
+    # Show existing skills in this category
+    if category not in data["skills"]:
+        data["skills"][category] = []
+        
+    current = data["skills"][category]
+    console.print(f"Current {category} Skills: {', '.join(current)}")
     
     new_skills = Prompt.ask("Enter new skills (comma separated)")
     skill_list = [s.strip() for s in new_skills.split(",")]
     
-    if category in data["skills"]:
-        data["skills"][category].extend(skill_list)
-    else:
-        data["skills"][category] = skill_list
-        
-    # Remove duplicates
+    # Add and Deduplicate
+    data["skills"][category].extend(skill_list)
     data["skills"][category] = list(set(data["skills"][category]))
+    
+    console.print(f"[green]✓ Added {len(skill_list)} skills to {category}[/green]")
 
 def add_summary(data):
     console.clear()
@@ -79,6 +90,7 @@ def add_summary(data):
     text = Prompt.ask("Paste Summary Text")
     
     data["summary"][category] = text
+    console.print(f"[green]✓ {category} Summary updated![/green]")
 
 def main():
     data = load_data()
@@ -87,7 +99,10 @@ def main():
         console.clear()
         console.print(Panel("[bold white]📝 RESUME PROFILE BUILDER[/bold white]", style="bold blue"))
         
-        console.print(f"[dim]Current Database: {len(data['experience'])} bullets, {len(data['skills'])} skill categories[/dim]\n")
+        # Stats
+        exp_count = len(data.get('experience', []))
+        skill_count = sum(len(v) for v in data.get('skills', {}).values())
+        console.print(f"[dim]Current Database: {exp_count} bullets, {skill_count} total skills[/dim]\n")
         
         console.print("1. 💼 Add Work Experience (Bullets)")
         console.print("2. 🛠️  Add Skills")
