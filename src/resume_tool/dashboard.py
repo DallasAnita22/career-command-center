@@ -26,9 +26,7 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* 1. Main Background - LinkedIn Light Gray */
-    .stApp {
-        background-color: #ffffff;
-    }
+
     
     /* 2. Card Styling - The "White Box" look */
     div[data-testid="stVerticalBlock"] > div > div {
