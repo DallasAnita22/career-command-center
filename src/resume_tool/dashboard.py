@@ -156,7 +156,7 @@ def create_pdf(data):
             pdf.set_font("Arial","B",12); pdf.cell(0,8,t,ln=True,border='B'); pdf.ln(2)
             pdf.set_font("Arial","",10); pdf.multi_cell(0,5,b.encode('latin-1','replace').decode('latin-1')); pdf.ln(3)
     sect("SUMMARY", data['summary']); sect("SKILLS", data['skills']); sect("EXPERIENCE", data['experience']); sect("EDUCATION", data['education'])
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output())
 
 def extract_pdf(f): 
     try: return "".join([p.get_text() for p in fitz.open(stream=f.read(), filetype="pdf")])
