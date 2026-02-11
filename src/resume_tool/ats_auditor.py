@@ -108,3 +108,95 @@ def perform_general_audit(resume_text):
         "issues": issues,
         "strengths": strengths
     }
+
+def main():
+    try:
+        from rich.console import Console
+        console = Console()
+        print_rich = True
+    except ImportError:
+        print_rich = False
+        print("Rich not installed, using standard output.")
+
+    if print_rich:
+        console.print("[bold cyan]ATS Auditor Tool[/bold cyan]")
+        console.print("Paste your resume text below (Press Ctrl+D or Ctrl+Z on Windows to finish):")
+    else:
+        print("ATS Auditor Tool")
+        print("Paste your resume text below (Press Ctrl+D or Ctrl+Z on Windows to finish):")
+
+    # Read multiline input
+    try:
+        lines = []
+        while True:
+            try:
+                line = input()
+            except EOFError:
+                break
+            lines.append(line)
+        resume_text = "\n".join(lines)
+    except KeyboardInterrupt:
+        return
+
+    if not resume_text.strip():
+        if print_rich: console.print("[red]No text provided![/red]")
+        else: print("No text provided!")
+        return
+
+    # Optional JD
+    if print_rich:
+        console.print("\n[bold cyan]Optional: Paste Job Description (or press Enter to skip):[/bold cyan]")
+        console.print("(Press Ctrl+D or Ctrl+Z to finish JD input)")
+    else:
+        print("\nOptional: Paste Job Description (or press Enter to skip):")
+        print("(Press Ctrl+D or Ctrl+Z to finish JD input)")
+
+    try:
+        jd_lines = []
+        while True:
+            try:
+                line = input()
+            except EOFError:
+                break
+            jd_lines.append(line)
+        jd_text = "\n".join(jd_lines)
+    except KeyboardInterrupt:
+        jd_text = ""
+
+    if jd_text.strip():
+        if print_rich: console.print("\n[bold green]Running Analysis against JD...[/bold green]")
+        else: print("\nRunning Analysis against JD...")
+        
+        results = get_analysis_data(resume_text, jd_text)
+        
+        if print_rich:
+            console.print(f"Match Score: [bold]{results['match_score']}%[/bold]")
+            if results['missing_keywords']:
+                console.print(f"[red]Missing Keywords:[/red] {', '.join(results['missing_keywords'])}")
+            if results['common_keywords']:
+                console.print(f"[green]Common Keywords:[/green] {', '.join(results['common_keywords'])}")
+        else:
+            print(f"Match Score: {results['match_score']}%")
+            print(f"Missing Keywords: {', '.join(results['missing_keywords'])}")
+            print(f"Common Keywords: {', '.join(results['common_keywords'])}")
+    else:
+        if print_rich: console.print("\n[bold green]Running General Health Check...[/bold green]")
+        else: print("\nRunning General Health Check...")
+        
+        results = perform_general_audit(resume_text)
+        
+        if print_rich:
+            console.print(f"Health Score: [bold]{results['score']}/100[/bold]")
+            for issue in results['issues']:
+                console.print(issue)
+            for strength in results['strengths']:
+                console.print(strength)
+        else:
+            print(f"Health Score: {results['score']}/100")
+            for issue in results['issues']:
+                print(issue)
+            for strength in results['strengths']:
+                print(strength)
+
+if __name__ == "__main__":
+    main()
