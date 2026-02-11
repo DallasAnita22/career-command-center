@@ -8,7 +8,7 @@ from rich.prompt import Prompt
 from rich.text import Text
 
 # Import your modules
-import master_resume_builder
+
 import chameleon_builder
 import ats_auditor
 import profile_builder
