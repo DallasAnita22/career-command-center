@@ -3,6 +3,9 @@ import os
 from rich.console import Console
 from rich.prompt import Prompt, Confirm
 from rich.panel import Panel
+from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 console = Console()
 
@@ -88,6 +91,71 @@ def generate_resume(summary, experience, skills):
         
     console.print("\n[dim]Resume generated successfully![/dim]")
 
+def save_to_docx(filename, role_name, summary, bullets, skills):
+    try:
+        doc = Document()
+        
+        # Styling
+        style = doc.styles['Normal']
+        style.font.name = 'Calibri'
+        style.font.size = Pt(11)
+
+        # Header
+        doc.add_heading('J. Bateman', level=0).alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_paragraph('Baltimore, MD | (301) 213-0948 | j.batemansheppard@gmail.com | LinkedIn/JBateman').alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_paragraph('='*80)
+
+        # Summary
+        doc.add_heading('PROFESSIONAL SUMMARY', level=2)
+        doc.add_paragraph(summary)
+
+        # Experience
+        doc.add_heading('PROFESSIONAL EXPERIENCE', level=2)
+        p = doc.add_paragraph()
+        runner = p.add_run('APKUDO LLC | Technical Delivery Analyst (Product Focus) | 2021 – Present')
+        runner.bold = True
+        
+        # --- THE FIX IS HERE ---
+        for b in bullets:
+            # 1. Strip existing bullets/dashes/stars/question marks from the start (handle dict or string)
+            text = b['text'] if isinstance(b, dict) else str(b)
+            clean_text = text.lstrip("•-–*? ")
+            
+            # 2. Add the paragraph using Word's NATIVE bullet style
+            doc.add_paragraph(clean_text, style='List Bullet')
+
+        # Project Section
+        doc.add_heading('Projects', level=2)
+        p_proj = doc.add_paragraph()
+        runner_proj = p_proj.add_run('FOCUSFINANCE | Product Owner & Developer')
+        runner_proj.bold = True
+        doc.add_paragraph('Designed and launched an Android budgeting application, defining the product roadmap based on user needs.')
+
+        # Skills
+        doc.add_heading('SKILLS & TOOLS', level=2)
+        
+        # Flatten skills dict to list if needed, or join values
+        skill_text = ""
+        if isinstance(skills, dict):
+             all_skills = []
+             for cat, s_list in skills.items():
+                 all_skills.extend(s_list)
+             skill_text = ' | '.join(all_skills)
+        elif isinstance(skills, list):
+             skill_text = ' | '.join(skills)
+        else:
+             skill_text = str(skills)
+
+        doc.add_paragraph(skill_text)
+
+        # Save
+        doc.save(filename)
+        print(f"\n✅ SUCCESS: Resume saved to {filename}")
+        return True
+    except Exception as e:
+        print(f"\n❌ ERROR: Could not save file: {e}")
+        return False
+
 def main():
     data = load_database()
     
@@ -101,6 +169,11 @@ def main():
     skills = select_skills(data)
     
     generate_resume(summary, experience, skills)
+    
+    if Confirm.ask("\nSave this resume to DOCX?"):
+        filename = Prompt.ask("Enter filename", default="Targeted_Resume.docx")
+        # Extract just the skill names for the docx function
+        save_to_docx(filename, "Targeted Role", summary, experience, skills)
 
 if __name__ == "__main__":
     main()
