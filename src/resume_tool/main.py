@@ -9,7 +9,9 @@ from rich.text import Text
 
 # Import your modules
 import master_resume_builder
+import chameleon_builder
 import ats_auditor
+import profile_builder
 
 # Initialize Console with a standard theme
 console = Console()
@@ -32,16 +34,17 @@ def main_menu():
         console.print("[bold black]1.[/bold black] [black]Build a Targeted Resume[/black]")
         console.print("[bold black]2.[/bold black] [black]Audit a Resume (Check Score)[/black]")
         console.print("[bold red]3.[/bold red] [black]Exit[/black]")
+        console.print("[bold cyan]4.[/bold cyan] 📝 Create Profile (Start Here if No Resume)", style="white")
         console.print("-" * 40, style="black")
         
         # Ask for input
-        choice = Prompt.ask("[bold blue]Select Option[/bold blue]", choices=["1", "2", "3"], default="1")
+        choice = Prompt.ask("[bold blue]Select Option[/bold blue]", choices=["1", "2", "3", "4"], default="1")
         
         if choice == "1":
             console.print("\n[bold green]...Launching Builder...[/bold green]")
             time.sleep(1)
             try:
-                master_resume_builder.main()
+                chameleon_builder.main()
             except Exception as e:
                 console.print(f"[bold red]Error:[/bold red] {e}")
             
@@ -61,6 +64,9 @@ def main_menu():
         elif choice == "3":
             console.print("\n[bold blue]Good luck! 👋[/bold blue]")
             break
+
+        elif choice == "4":
+            profile_builder.main()
 
 if __name__ == "__main__":
     main_menu()
